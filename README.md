@@ -52,5 +52,7 @@ Teniendo relaciones de uno a uno, uno a muchos, muchos a muchos
 ### Exclusivas de postgresql
 
 - Store Procedures
+Funciones que pueden ejecutar bloques de acciones en codigo sql o incluso otros lenguajes de programacion
 
 - Triggers
+Son acciones que ejecutan un procedure cuando se efectua una accion que inserte,actualice o borre datos en una tabla
