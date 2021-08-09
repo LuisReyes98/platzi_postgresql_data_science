@@ -117,8 +117,57 @@ Que hara un cientifico de datos en su dia a dia
 
 En una organización la parte a la que más va a ayudar la ciencia de datos es a la toma de decisiones.
 
-- **Data Driven.** Consiste en tomar decisiones basadas en los datos. Es labor del DS brindar estos datos y sus representaciones.
-- **Información significativa.** Entender de que manera podemos aprovechar los datos para decir que cosa y cómo la vamos a presentar
-Representación de los datos. Es importante presentar de forma visual los datos dependiendo del problema y el publico al que va dirigida esta presentación.
-- **Neutralidad de datos.** Hay ocasiones en la que los datos escogidos generan situaciones fuertes de discriminación a la hora de usarlos en modelos de AI, esto es conocido como Machine Bias.
-- **Storytelling con datos.** Es importante ser capaz de comunicar resultados para poder generar un impacto dentro de la organización.
+La parte mas fundamental donde aplicar los datos es en la toma de decisiones
+
+- **Data Driven.** Consiste en tomar decisiones basadas en los datos. Es labor del Data Scientist brindar estos datos y sus representaciones para que puedan ser interpretados de forma correcta.
+
+- **Información significativa.** Entender que historia se va a contar, abstraer y entender primero de que manera podemos aprovechar los datos para contar una historia que cosa se busca decir y cómo la vamos a presentar
+
+- **Representación de los datos.** Es importante presentar de forma visual los datos dependiendo del problema y el publico al que va dirigida esta presentación.
+
+- **Neutralidad de datos.** Hay ocasiones en la que los datos escogidos generan situaciones fuertes de discriminación a la hora de usarlos en modelos de AI, esto es conocido como Machine Bias. Ocurre intencional o accidentalmente por la forma en que el modelo se construye ya sea no teniendo diversidad suficiente como para ser neutral o los datos reflejan discriminacion del mundo real y esta se alimenta al modelo de AI sin ningun filtro.
+
+- **Storytelling con datos.** Es importante ser capaz de comunicar resultadosde la forma apropiada para poder generar un impacto positivo.
+
+## Equipos orientados a datos
+
+- **DBA (Data Base Administrator)** Mantener y administrar el motor de base de datos
+
+- **Data Warehouse (Almacen de datos)** Guardar datos pensando a futuro para poder trabajarse
+
+- **ETL/ Data Pipelines ( Extract Transform Load/ Tuberia de datos)** Llevar datos de un lado a otro
+
+- **BI (Bussiness Intelligence - Inteligencia del negocio)** Precursores del DataScience, empezar a extraer datos y entender los datos y sus repercusiones, encontrar patrones
+
+- **ML (Machine Learning)** Técnica para clasificar información o realizar predicciones con datos historicos
+
+- **Data Science (Ciencia de datos)** Entender a la organización e impactarla de forma positiva
+
+## Data science vs. Machine Learning
+
+### Machine Learning
+
+ML es un conjunto de ciencias, estrategias, disciplinas y algoritmos que nos van ayudar a tomar la capacidad de computo de las maquinas para resolver problemas de clasificación, de forma que se haga de forma automática, otro punto es realizar predicciones con base a patrones para generar tendencias acorde al comportamiento historico para predecir el futuro
+
+Casos de uso:
+
+- Clasificacion
+Agrupa los datos en base a sus caracteristicas
+
+Se encarga de encontrar diferentes segmentos dentro de los datos. Suele estar asociado a técnicas de aprendizaje no supervisado. Un ejemplo útil sería clasificar a los clientes de un banco.
+
+- Predicción
+En base a datos historico se busca predecir el comportamiento de los datos en el futuro
+
+Toma datos históricos para poder generar tendencias de algún tipo y así comprender comportamientos futuros.
+
+### Data Science
+
+Se enfoca principalmente en conocer a una organización o una empresa con alto nivel de detalle, de tal forma que tomar acciones basándose en las necesidades de estas. un DS posee muchas herramientas tales como la estadística, matemáticas, programación y también un conocimiento básico de Machine Learning para poder resolver los diferentes problemas que se presenten. Es importante que también posea un conocimiento profundo del negocio.
+
+Conoce a la organización y empresa a detalle para poder hacer algo al respecto. Toma todas las variables de la organización y herramientas disponibles para causar el mejor impacto
+
+### Relacion de Machine Learning y Data Science
+
+Si bien el machine Learning encuentra patrones con mayor facilidad que un estadista, Machine Learning no reemplaza ni reemplazara al cientifico de datos.
+Machine Learning es una herramienta más que complementa al Data Science y a la organización.
