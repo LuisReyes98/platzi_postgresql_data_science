@@ -171,3 +171,38 @@ Conoce a la organización y empresa a detalle para poder hacer algo al respecto.
 
 Si bien el machine Learning encuentra patrones con mayor facilidad que un estadista, Machine Learning no reemplaza ni reemplazara al cientifico de datos.
 Machine Learning es una herramienta más que complementa al Data Science y a la organización.
+
+## Diferencias entre otros manejadores y PostgreSQL
+
+Postgresql es un manejador de base de datos open source (codigo abierto)
+
+Postgresql se dedico desde muy temprano al manejo de objetos
+
+**Caracteristicas** de Postgresql
+
+- Código libre y orientado a la comunidad
+
+- Base de datos adaptada y madura, soporta JSON y funciones estadísticas
+
+- PL/pgSQL (Procedural Language/PostgreSQL)
+
+- Manejo de objetos
+
+- Particiones en las tablas mediante estrategias
+
+- Common table expressions tratamiento de tablas virtuales, más eficiente en tiempo de ejecusión
+
+- Window functions trata de encontrar relaciones entre un registro y el resto de registros
+
+## PLPGSQL: Stored procedures
+
+PLPGSQL es un lenguaje ampliado derivado desde el SQL
+pudiendo ejecutar codigo SQL estandar y funciones especificas de este lenguaje
+
+Existen
+
+- **Store procedures**
+Integran lógica a la sentencias SQL. Se han ido incluyendo en el estándar SQL. No regresan ningún valor.
+
+- **Functions**
+Son mas avanzadas estan hechas en el lenguaje de PLPGSQL, Regresan tipos de datos. Tienen más flexibilidad. No son estándar de SQL.
