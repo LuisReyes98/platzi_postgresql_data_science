@@ -206,3 +206,89 @@ Integran lógica a la sentencias SQL. Se han ido incluyendo en el estándar SQL.
 
 - **Functions**
 Son mas avanzadas estan hechas en el lenguaje de PLPGSQL, Regresan tipos de datos. Tienen más flexibilidad. No son estándar de SQL.
+
+## PLPGSQL: conteo, registro y triggers
+
+count_total_movies function
+
+```sql
+CREATE OR REPLACE FUNCTION count_total_movies()
+RETURNS int
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN COUNT(*) FROM peliculas;
+END
+$$;
+
+SELECT count_total_movies();
+```
+
+duplicar registros
+
+```sql
+-- al haber un insert en un tabla duplica ese registro en otra tabla
+CREATE OR REPLACE FUNCTION duplicate_records()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  -- NEW es el registro que se acaba de hacer insert
+  INSERT INTO aaab(bbba, ccca)
+  VALUES (NEW.bbb, NEW.ccc);
+  
+  RETURN NEW;
+END
+$$;
+
+-- creando el trigger
+CREATE TRIGGER aaa_changes
+  BEFORE INSERT
+  ON aaa
+  FOR EACH ROW
+  EXECUTE PROCEDURE duplicate_records();
+
+-- insertando valores para probar el trigger
+INSERT INTO aaa(bbb, ccc)
+VALUES ('abcde', 'efghi');
+```
+
+## PLPGSQL: Aplicado a data science
+
+Generando un reporte con una funcion
+
+```sql
+CREATE OR REPLACE FUNCTION movies_stats()
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+-- declaracion de variables antes del BEGIN
+DECLARE
+  total_rated_r REAL := 0.0;
+  total_larger_than_100 REAL := 0.0;
+  total_published_2006 REAL := 0.0;
+  average_duration REAL := 0.0;
+  average_rental_price REAL := 0.0;
+BEGIN
+  total_rated_r := COUNT(*) FROM peliculas WHERE clasificacion = 'R';
+  total_larger_than_100 := COUNT(*) FROM peliculas WHERE duracion > 100;
+  total_published_2006 := COUNT(*) FROM peliculas WHERE anio_publicacion = 2006;
+  average_duration := AVG(duracion) FROM peliculas;
+  average_rental_price := AVG(precio_renta) FROM peliculas;
+  
+  -- TRUNCATE borra lo que habia antes en la tabla 
+  TRUNCATE TABLE peliculas_estadisticas;
+  
+  INSERT INTO peliculas_estadisticas (tipo_estadistica, total)
+  VALUES
+    ('Peliculas con clasificacion R', total_rated_r),
+    ('Peliculas de mas de 100 minutos', total_larger_than_100),
+    ('Peliculas publicadas en 2006', total_published_2006),
+    ('Promedio de duracion en minutos', average_duration),
+    ('Precio promedio de renta', average_rental_price);
+END
+$$;
+
+-- ejecutar la funcion
+SELECT movies_stats();
+```
