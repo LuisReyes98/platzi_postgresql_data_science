@@ -292,3 +292,154 @@ $$;
 -- ejecutar la funcion
 SELECT movies_stats();
 ```
+
+## Integración con otros lenguajes
+
+Como la mayoría de las bases de datos, PostgreSQL cuenta con conectores para diferentes lenguajes de programación, de tal forma que si trabajas con Python, PHP, Java, JavaScript y todos sus frameworks, exista una forma de extraer datos de PostgreSQL y posteriormente utilizar las propiedades de los lenguajes procedurales para transformar y utilizar los datos.
+
+El lenguaje estándar utilizado en bases de datos relacionales es SQL (Structured Query Language), un lenguaje que tiene una estructura sumamente útil para hacer solicitudes de datos, en especial tomando como abstracción un diseño tabular de datos. Sin embargo, carece de estructuras de control y otras abstracciones que hacen poderosos a los lenguajes procedurales de programación.
+
+### PL implementables en PostgresSQL
+
+- PL/pgSQL
+PL/pgSQL (Procedural Language/PostgreSQL Structured Query Language) que es un superset de SQL
+
+- C
+con libpq https://www.postgresql.org/docs/13/libpq.html
+
+- PL/Tcl
+Tcl (Tool Command Language) https://www.postgresql.org/docs/13/pltcl.html
+
+- PL/Perl
+Perl es un lenguaje de programación que implementa una estructura de bloques de código y que toma inspiración de programas como C, sh, AWK, entre otros.
+https://www.postgresql.org/docs/13/plperl.html
+
+- PL/Python
+https://www.postgresql.org/docs/13/plpython.html.
+
+Para instalar el lenguaje Python en PostgreSQL, una vez instaladas las bibliotecas apropiadas para cada Sistema Operativo, es necesario ejecutar el siguiente query:
+
+```sql
+CREATE EXTENSION plpythonu
+```
+
+Ejemplo PL/Python vs PL/pgSQL
+
+PL/pgSQL
+
+```sql
+CREATE FUNCTION pgmax (a integer, b integer)
+RETURNS integer
+AS $$
+BEGIN
+   IF a > b THEN
+       RETURN a;
+   ELSE
+       RETURN b;
+   END IF;
+END
+$$ LANGUAGE plpgsql;
+```
+
+PL/Python
+
+```sql
+CREATE FUNCTION pymax (a integer, b integer)
+RETURNS integer
+AS $$
+   if a > b:
+       return a
+   return b
+$$ LANGUAGE plpythonu;
+
+CREATE EXTENSION plpythonu;
+SELECT pgmax(200,9);
+```
+
+## Tipos de Datos Personalizados
+
+La definicion de tipos de datos personalizados es una funcion de PostgreSQL que no es estandar en SQL
+
+```sql
+-- Creando nuevos tipos de datos
+CREATE TYPE humor AS ENUM ('triste', 'normal', 'feliz');
+```
+
+```sql
+-- Creando nuevos tipos de datos
+CREATE TYPE humor AS ENUM ('triste', 'normal', 'feliz');
+
+-- usando este tipo de datos en una tabla
+-- DROP TABLE persona_prueba;
+CREATE TABLE persona_prueba(
+	nombre text,
+	humor_actual humor
+);
+
+-- da error porque no es un valor valido de humor
+INSERT INTO persona_prueba VALUES ('Pablo', 'molesto');
+
+-- insertando
+INSERT INTO persona_prueba VALUES ('Pablo', 'feliz');
+```
+
+### Otras notas
+
+el keyword **ENUM** hace referencia a Enumerated Types, algo a tener en cuenta que esta funcion es case sensitive por lo que “FELIZ”, “Feliz”, y “feliz” son tres tipos de dato diferente.
+
+https://www.postgresql.org/docs/13/datatype-enum.html
+
+## Agregación de datos
+
+La agregación de datos es hacer queries que agrupen información para asi obtener información mas estructurada
+
+```sql
+-- maximo de precio de renta de todas las peliculas
+SELECT MAX(precio_renta)
+FROM peliculas;
+
+-- maximo de precio de renta por titulo de pelicula
+SELECT titulo, MAX(precio_renta)
+FROM peliculas
+GROUP BY titulo;
+
+-- minimos
+SELECT MIN(precio_renta)
+FROM peliculas;
+
+SELECT titulo, MIN(precio_renta)
+FROM peliculas
+GROUP BY titulo;
+
+-- sumatoria
+-- El precio de rentar todas las peliculas
+SELECT SUM(precio_renta)
+FROM peliculas;
+
+-- cantidad de peliculas por clasificacion
+SELECT clasificacion, COUNT(*)
+FROM peliculas
+GROUP BY clasificacion;
+
+-- promedios
+SELECT AVG(precio_renta)
+FROM peliculas;
+
+-- PRECIO PROMEDIO POR CLASIFICACION
+SELECT clasificacion, AVG(precio_renta) AS precio_promedio
+FROM peliculas
+GROUP BY clasificacion
+ORDER BY precio_promedio DESC;
+
+-- duracion PROMEDIO POR CLASIFICACION
+SELECT clasificacion, AVG(duracion) AS duracion_promedio
+FROM peliculas
+GROUP BY clasificacion
+ORDER BY duracion_promedio DESC;
+
+-- duracion_renta_promedio POR CLASIFICACION
+SELECT clasificacion, AVG(duracion_renta) AS duracion_renta_promedio
+FROM peliculas
+GROUP BY clasificacion
+ORDER BY duracion_renta_promedio DESC;
+```
