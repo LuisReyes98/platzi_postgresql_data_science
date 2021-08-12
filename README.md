@@ -443,3 +443,7 @@ FROM peliculas
 GROUP BY clasificacion
 ORDER BY duracion_renta_promedio DESC;
 ```
+
+### Otras notas
+
+Hay que tener en cuenta que count(*) cuenta todas la filas y count(campo) no toma encuenta los campos con valores nulos al realizar la cuenta.
