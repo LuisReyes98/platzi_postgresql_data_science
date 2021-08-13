@@ -372,8 +372,8 @@ CREATE TYPE humor AS ENUM ('triste', 'normal', 'feliz');
 -- usando este tipo de datos en una tabla
 -- DROP TABLE persona_prueba;
 CREATE TABLE persona_prueba(
-	nombre text,
-	humor_actual humor
+  nombre text,
+  humor_actual humor
 );
 
 -- da error porque no es un valor valido de humor
@@ -447,3 +447,74 @@ ORDER BY duracion_renta_promedio DESC;
 ### Otras notas
 
 Hay que tener en cuenta que count(*) cuenta todas la filas y count(campo) no toma encuenta los campos con valores nulos al realizar la cuenta.
+
+## Pensando en la presentación
+
+Al tener una parte de logica muy fuerte se piensa mas en que datos queremos obtener.
+
+Es igual de importante la historia que queremos contar y la forma en que vamos a presentar los datos
+
+La presentación de los datos tiene que ser pensada desde la planeación de que datos se buscaran
+
+**Ejemplos**
+
+Si queremos mostrar los cambios de algo a lo largo del tiempo una grafica de barra o grafica de linea puede ser de utilidad
+
+Tambien considerar que segmentos de la grafica se quiere enfocar, donde los datos muestran buenos resultados para mantenerlos asi o en donde los datos son deficientes para que se mejore esa area
+
+A la hora de hacer los queries tambien pensar en como quieres mostrar esos datos, de que manera , que punto quiere apoyar en una discusion en un argumento y que **historia** quieres contar
+
+Evaluar si en tu fuente de datos existen los datos para construir la historia que quieres contar
+
+**Ejemplo:** Si quieres contar los cambios de algo a traves del tiempo alguno de los campos de tus datos tiene que ser una fecha
+
+**Dashboards** la mayoria de los datos se consumen en este formato, hay distintos tipos de Dashboards para resaltar informacion ya sea del dia o del mes, o ver el total de unos datos en el tiempo, o usando graficas de pie para mostrar la relacion que existe entre los datos
+
+al escoger la forma de mostrarlo pensar en que historia quiero contar, pues ciertos graficos por defecto resaltan cierta informacion o relacion de los datos
+**La presentacion es muy importante** ya que presentar un mismo informe de una forma u otra puede cambiar la forma en que los datos se interpretan y la historia que se cuenta, por lo cual es tan importante tambien conocer muy bien el negocio y los datos del mismo, para contar **historias** que ayuden a tomar buenas decisiones.
+
+## Trabajando con objetos
+
+PostgreSQL permite trabajar directamente con objetos tipo JSON esto es una funcionalidad que no brindan todos los manejadores de datos
+
+porque trabajar con objetos JSON es complicado
+ya que son una cadena de texto con una estructura especifica, y lo que suele ocurrir es que los manejadores de datos guardan un string que evalúan en cada consulta que se les haga
+
+PostgresSQL posee el tipo de dato **json** y **jsonb** que guarda los datos de forma binaria, estos tipos de datos permiten que internamente postgresql guarde una estructura con la que puede trabajar más cómodamente los tipos de datos json
+
+Tabla con una columna en formato json
+
+```sql
+-- DROP TABLE ordenes;
+CREATE TABLE ordenes(
+  id serial NOT NULL PRIMARY KEY,
+  info json NOT NULL
+);
+
+INSERT INTO ordenes (info)
+VALUES (
+  '{"cliente": "David Shanchez", "items": { "producto": "Biberon", "cantidad": "24" }}'
+),
+(
+  '{"cliente": "Jorge Luis", "items": { "producto": "Carro hotweels", "cantidad": "2" }}'
+),
+(
+  '{"cliente": "Sancho Panza", "items": { "producto": "Caja", "cantidad": "13" }}'
+);
+
+-- regresa el valor aun en formato json
+SELECT
+  info -> 'cliente' AS cliente
+FROM ordenes;
+
+-- regresa el valor en formato string
+SELECT
+  info ->> 'cliente' AS cliente
+FROM ordenes;
+
+-- usando filtros con un campo json
+SELECT
+  info ->> 'cliente' AS cliente
+FROM ordenes
+WHERE info -> 'items' ->> 'producto' = 'Biberon';
+```
