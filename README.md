@@ -518,3 +518,219 @@ SELECT
 FROM ordenes
 WHERE info -> 'items' ->> 'producto' = 'Biberon';
 ```
+
+## Agregando objetos
+
+De las facultades mas importantes de un data sciencetist es resumir los datos
+
+para poder trabajar los valores que hay dentro del json como un numero debe primero hacer un CAST de estos valores
+
+```sql
+SELECT
+  MIN(
+    CAST (
+      info -> 'items' ->> 'cantidad'
+      AS INTEGER
+    )
+  ),
+  MAX(
+    CAST (
+      info -> 'items' ->> 'cantidad'
+      AS INTEGER
+    )
+  ),
+  SUM(
+    CAST (
+      info -> 'items' ->> 'cantidad'
+      AS INTEGER
+    )
+  ),
+  AVG(
+    CAST (
+      info -> 'items' ->> 'cantidad'
+      AS INTEGER
+    )
+  )
+FROM ordenes;
+```
+
+recordar que el manejo de json es una tarea pesada para el motor cada que se deben analizar estos datos, por lo cual si la velocidad de ejecucion de esa columna es muy importante se pueden trabajar como jsonb que es una forma nativa de Postgresql de manejar los json como un objeto binario
+
+## Common table expressions
+
+Esto es el uso de expresiones de las tablas para ahorrar memoria
+
+```sql
+WITH RECURSIVE  tabla_recursiva(n) AS (
+  VALUES(1)
+  UNION ALL
+  SELECT n+1 FROM tabla_recursiva WHERE n < 100
+) SELECT SUM(n) FROM tabla_recursiva;
+```
+
+Básicamente son estructuras de contro en PosgreSQL. En este caso el profesor solo hizo un bucle y retornó un número, pero podría haber ejecutado algo más interesante como una serie de Updates u otra cosa.
+.
+A veces, cuando estás programando, te puede pasar que tengas que hacer un bucle en Python, PHP, JS o el lenguajes que estés usando (a partir de ahora diré Python para simplificar) y que dentro del bucle tengas que ejecutar una sentencia SQL. Realizar cálculos en Python y volver a insertar datos. En estos casos, en cada vuelta del loop Python tendrá que llamar internamente al conector que le permite leer la base de datos, luego realizará los cálculos y conectará otra vez para con la DB para insertar el valor final.
+
+Bueno, en estos casos puedes hacer uso de las Common Table Expressions para hacer to loop directamente en PostgreSQL, realizar tus calculos y volver a insertar sin tener que llamar al conector en cada itineración. Ahorrarás tiempos, recursos, dinero, la aplicación será más rápida y te darán un ascenso… bueno… puede que lo último no pase solo por eso, pero si lo sabes vender impresiones puede que impresiones a algo y te ayude a conseguirlo en el largo plazo.
+
+Para saber más: [Leer la documentación oficial](https://www.postgresql.org/docs/13/queries-with.html)
+
+
+### Notas rusbelBermudez Common Table Expressions
+
+rusbel
+rusbelBermudez
+
+Common Table Expressions (de ahora en adelante CTE’s) se utilizan con la sentencia **WITH** y proveen una forma de desestructurar largos queries que a su vez pueden contener sub-queries o anidaciones, WITH permite crear una tabla temporal en memoria la cual le podemos aplicar a los amigos **SELECT, INSERT, UPDATE**, o DELETE y que a su vez podemos encadenar con otras sentencias tablas virtuales deltro del mismo **WITH**. **La ventaja fundamental** de estas CTE’s es que tienen mucho mejor performance que hacer un query dentro de otro query, ademas permite mejorar la legibilidad de tu codigo con el trade-off de que tendras muchas más lineas de codigo (o un exceso de verbosity, zen de python es mejor ser explicito), la otra funcion de la sentencia **WITH** es con la sentencia **RECURSIVE**, lo que nos permite generar una tabla con valores iterativos con la que podemos hacer operaciones de actualizacion o tareas de mantenimiento de datos o reindexar datos en tablas.
+
+En este tutorial me enfoco en el primer caso obtenemos las peliculas de genero Horror, mas rentadas con un precio de renta mayor a $1 y con mas de 100 minutos de duracion te dejo 3 ejemplos para realizar esta consulta donde debemos hacer join a diferentes tablas.
+**Ejemplo 1: Uso extensivo de JOINS**
+
+```sql
+-- Uso extensivo de JOINS
+SELECT 
+  peliculas.titulo,
+  peliculas.clasificacion,
+  categorias.nombre AS genero,
+  count(*) AS rentas_acumuladas,
+  precio_renta * count(rentas.fecha_renta) AS monto_rentas_acumulado
+FROM rentas
+-- RELACIONA RENTAS CON INVENTARIOS
+JOIN inventarios
+    ON rentas.inventario_id = inventarios.inventario_id
+-- relacion peliculas con inventarios
+JOIN peliculas
+    on inventarios.pelicula_id = peliculas.pelicula_id
+-- relacion peliculas con peliculas_categorias
+JOIN peliculas_categorias
+  ON peliculas.pelicula_id = peliculas_categorias.pelicula_id
+-- relacion peliculas_categorias con categorias
+JOIN categorias
+  ON peliculas_categorias.categoria_id = categorias.categoria_id
+-- condicional construido gracias a los join
+WHERE
+  peliculas.precio_renta < 1 and
+  categorias.nombre = 'Horror'
+
+GROUP BY   peliculas.pelicula_id, genero
+ORDER BY rentas_acumuladas DESC;
+
+-- Execution Time: 1.482 ms
+```
+
+**Ejemplo 2: Utilizando Sub-queries (un SELECT dentro de otro SELECT)**
+Para este ejemplo en particular es un tanto redundante, y si a mi parecer es mejor dejarlo como el codigo de arriba, su objetivo es que entiendas las diferencias.
+
+```sql
+SELECT 
+  peliculas.titulo,
+  peliculas.clasificacion,
+  categorias.nombre AS genero,
+  count(*) AS rentas_acumuladas,
+  precio_renta * count(rentas.fecha_renta) AS monto_rentas_acumulado 
+FROM rentas
+-- join entre rentas e inventario
+JOIN inventarios
+    ON rentas.inventario_id = inventarios.inventario_id
+
+JOIN peliculas
+    on inventarios.pelicula_id = peliculas.pelicula_id
+
+JOIN peliculas_categorias
+  ON peliculas.pelicula_id = peliculas_categorias.pelicula_id
+
+JOIN categorias
+  ON peliculas_categorias.categoria_id = categorias.categoria_id
+-- el condicional se construye con un subquery el cual es menos performante
+WHERE
+  peliculas.precio_renta < 1 and
+  categorias.nombre IN (
+    SELECT nombre
+    FROM categorias
+    WHERE nombre = 'Horror'
+  )
+
+GROUP BY   peliculas.pelicula_id, genero
+ORDER BY rentas_acumuladas DESC;
+
+-- Execution Time: 1.401 ms
+```
+
+**Ejemplo 3: Utilizando Common Table Expressions (CTE’s)**
+Este ejemplo es bastante mas verbose, te lo explico, WITH como te decia permite crear tablas temporales en memoria dentro del bloque de parentesis, en este caso creo la tabla peliculas_rentadas la cual hace join de inventarios y rentas ya que esta ultima no tiene el campo pelicula_id, la segunda tabla es peliculas_categoria_horror, ahora puedes llamar estas tablas de forma individual de la siguiente manera
+
+```sql
+-- tabla temporal 1
+WITH peliculas_rentadas AS (
+  SELECT pelicula_id, COUNT(fecha_renta) AS rentas_acumuladas
+  FROM inventarios
+  JOIN  rentas
+    ON inventarios.inventario_id = rentas.inventario_id
+  GROUP BY inventarios.pelicula_id
+  ORDER BY rentas_acumuladas DESC
+), 
+
+-- tabla temporal 2
+peliculas_categoria_horror AS (
+  SELECT pelicula_id, nombre
+  FROM peliculas_categorias
+  JOIN categorias 
+    ON peliculas_categorias.categoria_id = categorias.categoria_id
+  WHERE 
+    categorias.nombre = 'Horror'
+)
+
+SELECT * FROM peliculas_rentadas;
+-- SELECT * FROM peliculas_categoria_horror;
+
+-- O sustituyendo por peliculas_categoria_horror 
+```
+
+Ahora viene la magia, re-utilizando el codigo anterior podemos utilizar el campo **pelicula_id** para hacer join directamente al campo de peliculas y aplicar las restricciones con la sentencia **WHERE**
+
+```sql
+-- tabla temporal 1
+WITH peliculas_rentadas AS (
+  SELECT pelicula_id, COUNT(fecha_renta) AS rentas_acumuladas
+  FROM inventarios
+  JOIN  rentas
+    ON inventarios.inventario_id = rentas.inventario_id
+  GROUP BY inventarios.pelicula_id
+  ORDER BY rentas_acumuladas DESC
+), 
+
+-- tabla temporal 2
+peliculas_categoria_horror AS (
+  SELECT pelicula_id, nombre
+  FROM peliculas_categorias
+  JOIN categorias 
+    ON peliculas_categorias.categoria_id = categorias.categoria_id
+  WHERE 
+    categorias.nombre = 'Horror'
+)
+
+SELECT 
+  peliculas.titulo,
+  peliculas.clasificacion,
+  peliculas_categoria_horror.nombre AS genero,
+  peliculas_rentadas.rentas_acumuladas AS rentas_acumuladas,
+  precio_renta * (peliculas_rentadas.rentas_acumuladas) AS monto_rentas_acumulado 
+  
+FROM peliculas
+  JOIN peliculas_categoria_horror
+    ON peliculas.pelicula_id = peliculas_categoria_horror.pelicula_id
+  JOIN peliculas_rentadas
+    ON peliculas.pelicula_id = peliculas_rentadas.pelicula_id
+
+WHERE 
+  peliculas.duracion > 100 and peliculas.precio_renta < 1 ;
+
+-- Execution Time: 8.288 ms
+```
+
+Como tu puedes observar, son tres ejemplos que realizan la misma función, sin embargo cuando tu tabla crece a medida que tu aplicación gana popularidad el performance de las consultas se vuelve vital, por lo que te invito a probar con codigo de tu invencion y revisar el tiempo que tarda cada consulta en realizarse.
+
+Finalmente te invito a utiliar los CTE’s que pueden llegar a reducir el tiempo del query, aumentar su legibilidad y al mismo tiempo su mantenimiento en caso de que necesites modificar o crear nuevos features.
+
+[Link al tutorial original](https://platzi.com/tutoriales/1780-postgresql-datos/7204-common-table-expressions/)
