@@ -576,7 +576,6 @@ Bueno, en estos casos puedes hacer uso de las Common Table Expressions para hace
 
 Para saber más: [Leer la documentación oficial](https://www.postgresql.org/docs/13/queries-with.html)
 
-
 ### Notas rusbelBermudez Common Table Expressions
 
 rusbel
@@ -734,3 +733,56 @@ Como tu puedes observar, son tres ejemplos que realizan la misma función, sin e
 Finalmente te invito a utiliar los CTE’s que pueden llegar a reducir el tiempo del query, aumentar su legibilidad y al mismo tiempo su mantenimiento en caso de que necesites modificar o crear nuevos features.
 
 [Link al tutorial original](https://platzi.com/tutoriales/1780-postgresql-datos/7204-common-table-expressions/)
+
+## Window functions
+
+Son funciones internas de postgresql que permiten consultar acerca de informacion de las tablas y la relacion que existe entre sus registros
+
+- Las window function se ocupan para entender la relación que guarda un registro en particular con respecto al resto del dataset, ya sea una tabla, una partición o un query.
+
+- Generalmente se encargan de hacer rankings
+
+[Documentacion oficial](https://www.postgresql.org/docs/13/functions-window.html)
+
+## Particiones
+
+Postgresql a diferencia de otros manejadores de bases de datos permite manejar particiones de una manera muy explicita. ya que todos los manejadores las usan de forma interna y postgresql adema de hacer estos nos permite a nosotros definir explícitamente como serán las particiones.
+
+Las particiones consisten en separar datos de forma física manteniendo la integridad lógica.
+
+las tablas particionadas no pueden usar primary keys o claves únicas ya que el campo por el cual se realiza la partición cumple estas funciones.
+
+Las particiones se suelen crear en base a la fecha
+
+No todas las tablas requieren o se les recomienda usar particiones
+
+Registros de usuarios o artículos de información no se recomiendan las particiones ya que se pierde la capacidad de identificarlos con un id único
+
+Entre caso un registro de millones de datos de las ventas de una compañía si puede usar particiones ya que las consultas se hacen en base a la fecha de las ventas además de al tener tantos registros las particiones mejoran la velocidad de ejecución de las queries en la tabla.
+
+### Otras notas
+
+Particionado - Dividir una tabla en segmentos lógicos. Es una practica común de los manejadores, pero no todos ofrecen la opción para los usuarios de administrar estas particiones. Resulta útil para optimizar las consultas de datos.
+Observaciones:
+
+No todas las tablas deben de ser particionadas, vale la pena hacerlo unicamente cuando hay muchos registros.
+Permite optimizar algunas consultas al no tener que buscar dentro de toda una tabla sino unicamente en un segmento especifico.
+El particionado altera la consistencia de la tablas
+No existen los indices (llaves primarias) en las particiones, o mejor dicho, estos indices cambian basándose en la partición. e.g Si particionas una tabla por fechas, al buscar un dato especifico el primer criterio de búsqueda será la fecha
+
+## Presentación del proyecto
+
+Crear un Dashboard
+
+las aplicaciones más directas de la ciencia de datos son los Dashboards
+
+los Dashboards son tableros que nos permiten de forma muy directa y visual identificar de un vistazo información vital para el negocio
+
+los Dashboards dependen del tipo de publico
+ya que depende de la posición en la organización un tipo de información sera más valiosa que otra.
+
+Nos enfocaremos en dejar la información a modo que cualquier herramienta de presentación de datos pueda utilizar la información fácilmente
+
+[Herramienta para hacer gráficos basados en los resultados de los queries hechos en SQL.](https://mode.com/)
+
+## Top 10
