@@ -786,3 +786,79 @@ Nos enfocaremos en dejar la información a modo que cualquier herramienta de pre
 [Herramienta para hacer gráficos basados en los resultados de los queries hechos en SQL.](https://mode.com/)
 
 ## Top 10
+
+Obteniendo el top 10 de las peliculas
+
+```SQL
+SELECT
+  peliculas.pelicula_id AS id,
+  peliculas.titulo,
+  COUNT(*) AS numero_rentas,
+  -- para agregar un indice de la posición de la fila en el ranking
+  ROW_NUMBER () OVER (
+    -- no se puede usar numero_rentas porque no existe hasta que la query se ejecuta
+    ORDER BY COUNT(*) DESC
+  ) AS lugar
+FROM rentas
+  INNER JOIN inventarios ON rentas.inventario_id = inventarios.inventario_id
+  INNER JOIN peliculas ON inventarios.pelicula_id = peliculas.pelicula_id
+GROUP BY peliculas.pelicula_id
+ORDER BY numero_rentas DESC
+LIMIT 10;
+```
+
+## Actualizando precios
+
+Una tarea comun en la ciencia de datos es transformar datos o guardar datos de una forma ligeramente diferente en otro lugar
+
+Pidiendo la data en formato para cambio de moneda
+
+```SQL
+SELECT peliculas.pelicula_id,
+  tipos_cambio.tipo_cambio_id,
+  tipos_cambio.cambio_usd * peliculas.precio_renta AS precio_mxn
+FROM peliculas,
+  tipos_cambio
+WHERE tipos_cambio.codigo = 'MXN';
+```
+
+Guardando la data con un trigger
+
+```SQL
+CREATE FUNCTION public.precio_peliculas_tipo_cambio()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+     NOT LEAKPROOF
+AS $BODY$
+BEGIN
+  INSERT INTO precio_peliculas_tipo_cambio(
+    pelicula_id,
+    tipo_cambio_id,
+    precio_tipo_cambio,
+    ultima_actualizacion
+  )
+  SELECT NEW.pelicula_id,
+    tipos_cambio.tipo_cambio_id,
+    tipos_cambio.cambio_usd * NEW.precio_renta AS precio_tipo_cambio,
+    CURRENT_TIMESTAMP
+  FROM tipos_cambio
+  WHERE tipos_cambio.codigo = 'MXN';
+  RETURN NEW;
+END
+$BODY$;
+
+ALTER FUNCTION public.precio_peliculas_tipo_cambio()
+    OWNER TO luis;
+```
+
+Guardando el trigger
+
+```sql
+CREATE TRIGGER trigger_update_tipos_cambio
+  AFTER INSERT OR UPDATE
+  ON public.peliculas
+  FOR EACH ROW
+  EXECUTE PROCEDURE public.precio_peliculas_tipo_cambio();
+```
+
+De esta forma se guarda el precio de una peliculas en los tipos de cambio disponible al guardar o editar un pelicula
