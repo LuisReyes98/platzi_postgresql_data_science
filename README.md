@@ -862,3 +862,59 @@ CREATE TRIGGER trigger_update_tipos_cambio
 ```
 
 De esta forma se guarda el precio de una peliculas en los tipos de cambio disponible al guardar o editar un pelicula
+
+## Usando rank y percent rank
+
+para obtener el rankin percentil
+
+```sql
+PERCENT_RANK
+```
+
+Obtener el rankin denso de los registros
+
+```sql
+DENSE_RANK
+```
+
+Obteniendo el top mediante el uso del ranking
+
+```sql
+SELECT
+  peliculas.pelicula_id AS id,
+  peliculas.titulo,
+  COUNT(*) AS numero_rentas,
+  -- Ranking percentil
+  -- PERCENT_RANK () OVER (
+  DENSE_RANK () OVER (
+    -- cambiar el orden entre ASC y DESC cambia completamente como se define el percentil
+  -- siendo el procentaje inclusivo del mayor al menor o a la inversa
+    --ORDER BY COUNT(*) ASC
+    ORDER BY COUNT(*) DESC
+  ) AS lugar
+FROM rentas
+  INNER JOIN inventarios ON rentas.inventario_id = inventarios.inventario_id
+  INNER JOIN peliculas ON inventarios.pelicula_id = peliculas.pelicula_id
+GROUP BY peliculas.pelicula_id
+ORDER BY numero_rentas DESC;
+```
+
+## Ordenando datos geográficos
+
+Los datos geográficos se pueden encontrar en forma de coordenadas (latitud y longitud), direcciones, codigo de pais, paises , ciudades etc...
+
+agrupando los datos en cantidad de rentas por ciudad
+
+```sql
+SELECT
+  ciudades.ciudad_id,
+  ciudades.ciudad,
+  COUNT(*) AS rentas_por_ciudad
+FROM
+  ciudades
+  INNER JOIN direcciones ON ciudades.ciudad_id = direcciones.ciudad_id
+  INNER JOIN tiendas ON tiendas.direccion_id = direcciones.direccion_id
+  INNER JOIN inventarios ON inventarios.tienda_id = tiendas.tienda_id
+  INNER JOIN rentas ON inventarios.inventario_id = rentas.inventario_id
+GROUP BY ciudades.ciudad_id;
+```
