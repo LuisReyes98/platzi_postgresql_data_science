@@ -918,3 +918,44 @@ FROM
   INNER JOIN rentas ON inventarios.inventario_id = rentas.inventario_id
 GROUP BY ciudades.ciudad_id;
 ```
+
+## Datos en el tiempo
+
+Agrupar los datos en base a una medida de tiempo es muy util a la hora de construir graficos de linea o barra en los cuales se puede ver facilmente como ha sido el comportamiento de los datos a lo largo del tiempo
+
+Cantidad de rentas de una pelicula por año y por mes
+
+```sql
+SELECT
+  date_part('year', rentas.fecha_renta) AS year,
+  date_part('month', rentas.fecha_renta) AS month,
+  peliculas.titulo,
+  COUNT(*) AS numero_rentas
+FROM
+  rentas
+  INNER JOIN inventarios ON rentas.inventario_id = inventarios.inventario_id
+  INNER JOIN peliculas ON peliculas.pelicula_id = inventarios.pelicula_id
+GROUP BY year, month, peliculas.pelicula_id;
+```
+
+Numero de rentas por mes y por año
+
+```sql
+-- numero de rentas por mes y por año
+SELECT
+  date_part('year', rentas.fecha_renta) AS year,
+  date_part('month', rentas.fecha_renta) AS month,
+  COUNT(*) AS numero_rentas
+FROM
+  rentas
+GROUP BY year, month
+ORDER BY year, month;
+```
+
+## Visualizando datos con Tableau
+
+Tableau es una herramienta de visualizacion de datos muy poderosa que nos permite directamente conectarnos a una base de datos y contruir Data Viz en base a ellos.
+
+## ¿Qué sigue?
+
+Recordar que en la ciencia de datos Postgresql es una herramienta mas que nos ayuda en nuestras labores como Data Scientist
