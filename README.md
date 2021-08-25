@@ -51,7 +51,8 @@ Atributos/Propiedades que pueden poseer las Entidades
 La manera en que se unen una entidad con otra
 Son las relaciones que tiene una entidad con otra
 Teniendo relaciones de uno a uno, uno a muchos, muchos a muchos
-la relacion de muchos a muchos se traduce en el ambito relacional en el uso de una tabla transitiva
+**la relacion de muchos a muchos** se traduce en el ambito relacional en el uso de una tabla transitiva
+**la relacion de uno a muchos o uno uno** se traduce en el intercambio de llaves entre tablas
 
 - Stored procedures
 Son funciones reutilizables que puede ejecutar el manejador de base de datos multiples veces
@@ -369,6 +370,8 @@ SELECT pgmax(200,9);
 ## Tipos de Datos Personalizados
 
 La definicion de tipos de datos personalizados es una funcion de PostgreSQL que no es estandar en SQL
+
+La principal dificultad de implementar estos tipos de datos no estandar son la complejidad en las busquedas y tiempos de ejecucion en la tabla, ya que son datos no primitivos y deben procesarse con mayor complejidad
 
 ```sql
 -- Creando nuevos tipos de datos
