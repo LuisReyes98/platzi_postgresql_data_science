@@ -40,14 +40,24 @@ Unos de los casos de usos de bases de datos NO relacionales es la necesidad de l
 ## Conceptos importantes de las bases de datos relacionales
 
 - Entidades/Tablas
+Se traducen en cosas del mundo real representadas en la base de datos
 Cualquier entidad o representacion del mundo real
 
 - Atributos
+Todas las entidades tienen caracteristicas/propiedades que estan ligadas a una entidad
 Atributos/Propiedades que pueden poseer las Entidades
 
 - Relaciones
 La manera en que se unen una entidad con otra
+Son las relaciones que tiene una entidad con otra
 Teniendo relaciones de uno a uno, uno a muchos, muchos a muchos
+la relacion de muchos a muchos se traduce en el ambito relacional en el uso de una tabla transitiva
+
+- Stored procedures
+Son funciones reutilizables que puede ejecutar el manejador de base de datos multiples veces
+
+- Triggers
+Son disparadores que ligan un stored procedure con un evento en una tabla, para realizar un procedure cada vez que se ejecuta un evento en una tabla
 
 ### Exclusivas de postgresql
 
@@ -201,7 +211,7 @@ pudiendo ejecutar codigo SQL estandar y funciones especificas de este lenguaje
 
 Existen
 
-- **Store procedures**
+- **Stored procedures**
 Integran lógica a la sentencias SQL. Se han ido incluyendo en el estándar SQL. No regresan ningún valor.
 
 - **Functions**
@@ -391,6 +401,8 @@ https://www.postgresql.org/docs/13/datatype-enum.html
 
 ## Agregación de datos
 
+La agregacion de datos es encontrar formas en que podemos juntar los datos y sacar totales, datos ya sumarizados/resumidos para poder entregar estos totales en reportes como inteligencia para el negocio
+
 La agregación de datos es hacer queries que agrupen información para asi obtener información mas estructurada
 
 ```sql
@@ -480,7 +492,9 @@ PostgreSQL permite trabajar directamente con objetos tipo JSON esto es una funci
 porque trabajar con objetos JSON es complicado
 ya que son una cadena de texto con una estructura especifica, y lo que suele ocurrir es que los manejadores de datos guardan un string que evalúan en cada consulta que se les haga
 
-PostgresSQL posee el tipo de dato **json** y **jsonb** que guarda los datos de forma binaria, estos tipos de datos permiten que internamente postgresql guarde una estructura con la que puede trabajar más cómodamente los tipos de datos json
+esto ocasiona que lo que se guarda en una base de datos es una cadena de texto haciendo que las operaciones de busqueda y calculos estadisticos son mas lentas y mas complicadas.
+
+PostgresSQL posee una solucion a este problema en el tipo de dato **json** y **jsonb** que guarda los datos de forma binaria, estos tipos de datos permiten que internamente postgresql guarde una estructura con la que puede trabajar más cómodamente los tipos de datos json
 
 Tabla con una columna en formato json
 
@@ -558,9 +572,13 @@ recordar que el manejo de json es una tarea pesada para el motor cada que se deb
 
 ## Common table expressions
 
-Esto es el uso de expresiones de las tablas para ahorrar memoria
+Esto es el uso de expresiones como **estructura de control** en las tablas para ahorrar memoria.
+
+Ademas de permitirnos hacer **procesos iterativos** en los datos
+las cuales son acciones que SQL normal no nos permite hacer
 
 ```sql
+-- proceso iterativo con una tabla recursiva
 WITH RECURSIVE  tabla_recursiva(n) AS (
   VALUES(1)
   UNION ALL
@@ -568,7 +586,9 @@ WITH RECURSIVE  tabla_recursiva(n) AS (
 ) SELECT SUM(n) FROM tabla_recursiva;
 ```
 
-Básicamente son estructuras de contro en PosgreSQL. En este caso el profesor solo hizo un bucle y retornó un número, pero podría haber ejecutado algo más interesante como una serie de Updates u otra cosa.
+Tambien nos permite hacer operaciones como tomar los datos de una tabla procesarlos y guardarlos en otra tabla
+
+Básicamente son estructuras de control unicas en PosgreSQL. En este caso el profesor solo hizo un bucle y retornó un número, pero podría haber ejecutado algo más interesante como una serie de Updates u otra cosa.
 .
 A veces, cuando estás programando, te puede pasar que tengas que hacer un bucle en Python, PHP, JS o el lenguajes que estés usando (a partir de ahora diré Python para simplificar) y que dentro del bucle tengas que ejecutar una sentencia SQL. Realizar cálculos en Python y volver a insertar datos. En estos casos, en cada vuelta del loop Python tendrá que llamar internamente al conector que le permite leer la base de datos, luego realizará los cálculos y conectará otra vez para con la DB para insertar el valor final.
 
@@ -736,7 +756,11 @@ Finalmente te invito a utiliar los CTE’s que pueden llegar a reducir el tiempo
 
 ## Window functions
 
-Son funciones internas de postgresql que permiten consultar acerca de informacion de las tablas y la relacion que existe entre sus registros
+Son funciones que nos permiten buscar la relacion que existe entre un row de una tabla y el resto de los rows de esa misma tabla.
+
+Son funciones internas de postgresql que permiten consultar acerca de la relacion que existe entre un registro de una tabla y los demas registros
+
+La principal accion que ejecutan es hacer un rank de los registro, para ordenarlos de mayor a menor, siendo util a la hora de realizar un query complejo y evaluar en que lugar queda un registro.
 
 - Las window function se ocupan para entender la relación que guarda un registro en particular con respecto al resto del dataset, ya sea una tabla, una partición o un query.
 
@@ -807,6 +831,8 @@ ORDER BY numero_rentas DESC
 LIMIT 10;
 ```
 
+Usamos la window function de postgresql **ROW_NUMBER**
+
 ## Actualizando precios
 
 Una tarea comun en la ciencia de datos es transformar datos o guardar datos de una forma ligeramente diferente en otro lugar
@@ -872,6 +898,7 @@ PERCENT_RANK
 ```
 
 Obtener el rankin denso de los registros
+nos permite ver la posición, sin brechas entre los valores y agrupando los valores iguales
 
 ```sql
 DENSE_RANK
@@ -887,6 +914,7 @@ SELECT
   -- Ranking percentil
   -- PERCENT_RANK () OVER (
   DENSE_RANK () OVER (
+  --   RANK () OVER (
     -- cambiar el orden entre ASC y DESC cambia completamente como se define el percentil
   -- siendo el procentaje inclusivo del mayor al menor o a la inversa
     --ORDER BY COUNT(*) ASC
@@ -901,7 +929,7 @@ ORDER BY numero_rentas DESC;
 
 ## Ordenando datos geográficos
 
-Los datos geográficos se pueden encontrar en forma de coordenadas (latitud y longitud), direcciones, codigo de pais, paises , ciudades etc...
+Los datos geográficos se pueden encontrar en forma de coordenadas (latitud y longitud), direcciones, codigos de pais, codigos de ciudad, etc...
 
 agrupando los datos en cantidad de rentas por ciudad
 
